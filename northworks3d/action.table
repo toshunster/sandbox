@@ -1,2 +1,2 @@
-( FromAddress noreply@3dhubs.com AND KeywordToFind Congratulations )	scenario1.py
-( FromAddress noreply@3dhubs.com AND KeywordToFind New Order )	scenario2.py
+( FromAddress no-reply@accounts.google.com AND KeywordToFind Access )	scenario2.py
+( FromAddress a.kukhtichev@mail.ru AND KeywordToFind dear friend )	scenario1.py
