@@ -1,24 +1,20 @@
+#!/usr/bin/env python3
+
 # -*- coding: utf-8 -*-
 
+import re
 import os
 import sys
 import time
 
 import email
-import logging
 import imaplib
+import subprocess
 
 from config import GMAIL_LOGIN, GMAIL_PASSWORD
 
 from rule_parser import RuleParser
-
-FORMAT = '[%(asctime)s] [%(levelname)s] - %(message)s'
-logger = logging.getLogger(__name__)
-out_hdlr = logging.StreamHandler(sys.stdout)
-out_hdlr.setFormatter(logging.Formatter( FORMAT ))
-out_hdlr.setLevel(logging.DEBUG)
-logger.addHandler(out_hdlr)
-logger.setLevel(logging.DEBUG)
+from utils import save_email, get_links, logger
 
 IMAP_SERVER = 'imap.gmail.com'
 IMAP_PORT = '993'
@@ -124,6 +120,8 @@ if __name__ == "__main__":
                         tree = RuleParser( rule, globals() )
                         if tree.eval_rule():
                             logger.info( "Match {} rule. Executing '{}' script.".format( enum+1, script ) )
+                            save_email( message_body )
+                            subprocess.call( "python3 {}".format( script ), shell=True )
                             break
                     # Save new uid in file.
                     if start_uid is not None and start_uid != uid:
