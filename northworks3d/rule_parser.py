@@ -65,6 +65,10 @@ class RuleParser(object):
             else:
                 raise ValueError
         self.tree = current_tree
+        # If we have only 1 node (Example: "func1 arg1"), then 
+        # the root node is empty. Make it left child which is not empty.
+        if self.tree.getRightChild() is None and self.tree.getLeftChild() is not None:
+            self.tree = self.tree.getLeftChild()
     
     def eval_rule( self ):
         return self.eval_rule_( self.tree )
@@ -76,13 +80,10 @@ class RuleParser(object):
             left_child = self.eval_rule_( tree.getLeftChild() )
             right_child = self.eval_rule_( tree.getRightChild() )
             if left_child is not None and right_child is not None:
-                if type( left_child ) is not bool:
-                    left_child = self.globals[left_child[0]]( " ".join( left_child[1] ) )
-                if type( right_child ) is not bool:
-                    right_child = self.globals[right_child[0]]( " ".join( right_child[1] ) )
                 return self.operators[ tree.getRootVal().lower() ]( left_child, right_child )
             else:
-                return tree.getRootVal()
+                root_value = tree.getRootVal()
+                return self.globals[ root_value[0] ]( " ".join( root_value[1] ) ) if type( root_value ) is not bool else root_value
     
     def serialize( self ):
         return self.serialize_( self.tree )
@@ -103,7 +104,8 @@ class RuleParser(object):
 if __name__ == "__main__":
     rules = [ "( func1 arg1 AND func1 arg1 )",
               "( ( func1 arg1 OR func2 arg2 ) AND ( func3 arg3 arg4 AND func4 arg1 arg2 arg3 arg4 ) )", \
-              "( ( func1 arg1 AND func2 arg2 ) OR func3 arg1 arg2 )" ]
+              "( ( func1 arg1 AND func2 arg2 ) OR func3 arg1 arg2 )",\
+              "func1 arg1" ]
     # Check input rules are parsed correct.
     for rule in rules:
         tree = RuleParser( rule )
