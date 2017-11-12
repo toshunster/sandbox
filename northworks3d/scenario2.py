@@ -23,5 +23,3 @@ if __name__ == "__main__":
     time.sleep(5)
     requester.get( links_from_message[0] )
     time.sleep(5)
-
-
