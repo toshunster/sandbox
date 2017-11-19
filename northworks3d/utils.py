@@ -8,19 +8,33 @@ import sys
 import time
 import logging
 from selenium import webdriver
+from pyvirtualdisplay import Display
+
+try:
+    display = Display(visible=0, size=(800, 600))
+    display.start()
+except:
+    pass
 
 LAST_EMAIL_FILE_NAME = 'last_email.txt'
 URL_PATTERN = re.compile( r'href="(?P<url>[^\"]*?)"' )
 URL_2_PATTERN = re.compile( r'(https?://\S+)' )
 
-
 FORMAT = '[%(asctime)s] [%(levelname)s] - %(message)s'
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('main')
 out_hdlr = logging.StreamHandler(sys.stdout)
-out_hdlr.setFormatter( logging.Formatter( FORMAT ) )
+out_hdlr.setFormatter( logging.Formatter( FORMAT, "%Y-%m-%d %H:%M:%S" ) )
 out_hdlr.setLevel( logging.DEBUG )
 logger.addHandler( out_hdlr )
 logger.setLevel( logging.DEBUG )
+
+action_logger = logging.getLogger('action_logger')
+action_logger_hdlr = logging.FileHandler('action.log', mode='a')
+formatter = logging.Formatter('%(asctime)s  %(message)s', "%Y-%m-%d %H:%M:%S")
+action_logger_hdlr.setFormatter(formatter)
+action_logger.setLevel( logging.DEBUG )
+action_logger.addHandler( action_logger_hdlr )
+
 
 def auth_3dhub( requester, name, password ):
     LOGIN_URL = "https://www.3dhubs.com/user?destination=home%3Faction"
@@ -38,12 +52,19 @@ class Requester:
         self.browser = self.init_chrome()
         # PhatnomJS
         #self.browser = self.init_phantomjs()
-
+        # Firefox
+        #self.browser = self.init_firefox()
         self.browser.set_page_load_timeout(60)
         #self.browser.delete_all_cookies()
         #self.authorize()
         pass
     
+    def init_firefox(self):
+        gecko = "./geckodriver"
+        firefox_profile = webdriver.FirefoxProfile()
+        firefox_profile.set_preference('permissions.default.image', 2)
+        return webdriver.Firefox( firefox_profile, executable_path=gecko)
+
     def init_phantomjs(self):
         desired_capabilities = dict(DesiredCapabilities.PHANTOMJS)
         user_agent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"

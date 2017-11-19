@@ -14,7 +14,7 @@ import subprocess
 from config import GMAIL_LOGIN, GMAIL_PASSWORD
 
 from rule_parser import RuleParser
-from utils import save_email, get_links, logger
+from utils import save_email, get_links, logger, action_logger
 
 IMAP_SERVER = 'imap.gmail.com'
 IMAP_PORT = '993'
@@ -119,14 +119,16 @@ if __name__ == "__main__":
                     for enum, (rule, script) in enumerate( rules ):
                         tree = RuleParser( rule, globals() )
                         if tree.eval_rule():
-                            logger.info( "Match {} rule. Executing '{}' script.".format( enum+1, script ) )
+                            logger.info( "[{}] Match {} rule. Executing '{}' script.".format( uid, enum+1, script ) )
+                            action_logger.info( 'Email id: {}, Rule: {}, Action = {}'.format( uid, tree.serialize(), script ) )
                             save_email( message_body )
                             subprocess.call( "python3 {}".format( script ), shell=True )
                             break
                     # Save new uid in file.
-                    if start_uid is not None and start_uid != uid:
+                    if start_uid is None or start_uid != uid:
                         with open( LAST_UID_FILE_NAME, 'w' ) as output:
                             output.write( str(int(uid)) )
+                        start_uid = uid
                 time.sleep( 5 )
     except imaplib.IMAP4.error as e:
         logger.error( "imaplib.IMAP4.error: {}".format( str(e) ) )
